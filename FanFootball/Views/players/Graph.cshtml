@@ -1,0 +1,96 @@
+﻿@model List<FanFootball.Models.player>
+
+@{
+    ViewData["Title"] = "ADP vs Fantasy Points";
+
+    var chartData = Model
+        .Where(p => p.ADP > 0 && p.Points > 0)
+        .OrderBy(p => p.ADP)
+        .Take(50)
+        .ToList();
+
+    var dataPoints = chartData.Select(p => new { x = p.ADP, y = p.Points }).ToList();
+    var playerNames = chartData.Select(p => p.Name).ToList();
+    var jsonPoints = System.Text.Json.JsonSerializer.Serialize(dataPoints);
+    var jsonNames = System.Text.Json.JsonSerializer.Serialize(playerNames);
+}
+
+<h2>ADP vs Fantasy Points</h2>
+
+<canvas id="adpPointsChart" width="1000" height="500"></canvas>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-trendline@2.1.0/dist/chartjs-plugin-trendline.min.js"></script>
+
+    <script>
+        const ctx = document.getElementById('adpPointsChart').getContext('2d');
+        const dataPoints = @Html.Raw(jsonPoints);
+        const playerNames = @Html.Raw(jsonNames);
+
+        new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Players',
+                    data: dataPoints,
+                    backgroundColor: 'blue',
+                    trendlineLinear: {
+                        style: "rgba(255,0,0,0.6)",
+                        lineStyle: "solid",
+                        width: 2,
+                        projection: false
+                    }
+                }]
+            },
+                    options: {
+            plugins: {
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleColor: 'white',
+                    bodyColor: 'white',
+                    callbacks: {
+                        label: function (context) {
+                            const i = context.dataIndex;
+                            return `${playerNames[i]}: ADP ${context.parsed.x}, Points ${context.parsed.y}`;
+                        }
+                    }
+                },
+                legend: {
+                    labels: {
+                        color: 'white' 
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Average Draft Position',
+                        color: 'white'
+                    },
+                    ticks: {
+                        color: 'white'
+                    },
+                    grid: {
+                        color: 'rgba(255,255,255,0.2)' 
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Fantasy Points',
+                        color: 'white'
+                    },
+                    ticks: {
+                        color: 'white'
+                    },
+                    grid: {
+                        color: 'rgba(255,255,255,0.2)'
+                    }
+                }
+            }
+        }
+        });
+    </script>
+}
