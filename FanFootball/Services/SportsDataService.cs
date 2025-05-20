@@ -7,7 +7,7 @@ namespace FanFootball.Services
     public class SportsDataService
     {
         private readonly HttpClient _httpClient;
-        private const string ApiKey = "7eb120e676024668a21c631546daa43c"; //ma key
+        private const string ApiKey = "testtest"; //ma fake key
         private const string BaseUrl = "https://api.sportsdata.io/v3/nfl/projections/json/PlayerSeasonProjectionStats/2024REG";
 
 
